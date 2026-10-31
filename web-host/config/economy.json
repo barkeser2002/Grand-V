@@ -1,0 +1,38 @@
+{
+  "jobs": [
+    { "id": "unemployed", "name": "İşsiz", "salary": 150 },
+    { "id": "taxi", "name": "Taksi şoförü", "salary": 350 },
+    { "id": "trucker", "name": "Tır şoförü", "salary": 400 },
+    { "id": "mechanic", "name": "Tamirci", "salary": 450 },
+    { "id": "ems", "name": "Sağlık görevlisi", "salary": 550 },
+    { "id": "police", "name": "Polis", "salary": 600 },
+    { "id": "realtor", "name": "Emlakçı", "salary": 500 }
+  ],
+  "items": [
+    { "id": "water", "name": "Su", "price": 5, "category": "Gıda" },
+    { "id": "sandwich", "name": "Sandviç", "price": 12, "category": "Gıda" },
+    { "id": "coffee", "name": "Kahve", "price": 8, "category": "Gıda" },
+    { "id": "phone", "name": "Telefon", "price": 450, "category": "Elektronik" },
+    { "id": "radio", "name": "Telsiz", "price": 300, "category": "Elektronik" },
+    { "id": "repairkit", "name": "Tamir kiti", "price": 250, "category": "Araç" },
+    { "id": "jerrycan", "name": "Benzin bidonu", "price": 120, "category": "Araç" },
+    { "id": "bandage", "name": "Bandaj", "price": 60, "category": "Sağlık" },
+    { "id": "lockpick", "name": "Maymuncuk", "price": 180, "category": "Alet" }
+  ],
+  "vehicles": [
+    { "id": "blista", "name": "Dinka Blista", "price": 15000, "class": "Kompakt" },
+    { "id": "sultan", "name": "Karin Sultan", "price": 32000, "class": "Sedan" },
+    { "id": "baller", "name": "Gallivanter Baller", "price": 55000, "class": "SUV" },
+    { "id": "bati", "name": "Pegassi Bati 801", "price": 24000, "class": "Motosiklet" },
+    { "id": "elegy2", "name": "Annis Elegy RH8", "price": 95000, "class": "Spor" },
+    { "id": "adder", "name": "Truffade Adder", "price": 1000000, "class": "Süper" }
+  ],
+  "houses": [
+    { "id": "grove-st", "name": "Grove Street ev", "price": 80000, "x": -14, "y": -1442 },
+    { "id": "vespucci-apt", "name": "Vespucci daire", "price": 150000, "x": -1150, "y": -1520 },
+    { "id": "mirror-park", "name": "Mirror Park ev", "price": 250000, "x": 1260, "y": -580 },
+    { "id": "sandy-trailer", "name": "Sandy Shores karavan", "price": 35000, "x": 1975, "y": 3815 },
+    { "id": "vinewood-villa", "name": "Vinewood Hills villa", "price": 900000, "x": -175, "y": 497 }
+  ],
+  "limits": { "maxItemQty": 50, "maxVehicles": 5, "maxHouses": 2, "jobCooldownMs": 600000, "resaleRate": 0.5 }
+}

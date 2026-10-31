@@ -1,0 +1,14 @@
+# FiveWeb desktop: installers and build output never go into Git.
+desktop-launcher/node_modules/
+desktop-launcher/dist/
+desktop-launcher/out/
+desktop-launcher/.smoke/
+*.exe
+*.AppImage
+*.asar
+*.blockmap
+# Game assets are streamed from the server; never commit or bundle them.
+playgta5.com/
+web-host/node_modules/
+web-host/.env
+.env

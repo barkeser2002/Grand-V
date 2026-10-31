@@ -1,0 +1,464 @@
+// All browser surfaces read the launcher's shared language configuration. The
+// game service protocol and user-authored names are deliberately independent.
+const messages = Object.freeze({
+  'language.reload': ['语言已更新。游戏菜单语言会在下次进入游戏时应用。', 'Language updated. Game menus will use it the next time you enter the game.'],
+  'page.starting': ['正在启动…', 'Starting…'],
+  'page.loading': ['加载中…', 'Loading…'],
+  'join.eyebrow': ['GTA V · 公共战局', 'GTA V · Public Session'],
+  'join.title': ['加入在线战局', 'Join an Online Session'],
+  'join.close': ['关闭加入战局', 'Close session dialog'],
+  'join.nickname': ['您的昵称', 'Your nickname'],
+  'join.nicknamePlaceholder': ['输入昵称', 'Enter your nickname'],
+  'join.server': ['服务器 IP:端口', 'Server IP:port'],
+  'join.serverPlaceholder': ['选择线路或输入 IP:端口', 'Choose a server or enter IP:port'],
+  'join.preset': ['角色预设', 'Character preset'],
+  'join.npc_male': ['随机男性 NPC', 'Random male NPC'],
+  'join.npc_female': ['随机女性 NPC', 'Random female NPC'],
+  'join.freemode_male': ['男性自由模式角色', 'Male freemode character'],
+  'join.freemode_female': ['女性自由模式角色', 'Female freemode character'],
+  'join.hint': ['角色会生成随机服饰与适用妆容。选择同一条线路的玩家进入同一个 GTA V 公共战局。', 'Clothing and compatible makeup are randomized. Players on the same server join the same GTA V public session.'],
+  'join.submit': ['加入战局', 'Join Session'],
+  'join.defaultName': ['玩家', 'Player'],
+  'join.saveFailed': ['无法保存本次战局设置，请允许此页面使用会话存储后重试。', 'Could not save session settings. Allow session storage for this page, then try again.'],
+  'join.checkPending': ['正在检查多人运行副本，请稍候…', 'Checking the multiplayer runtime, please wait…'],
+  'join.checkMissing': ['多人运行副本尚未就绪。请先运行 python3 tools/build_multiplayer_client.py（自定义资源目录需附加对应的 --game-dir 和 --runtime-dir），再重启 serve_local.py 并刷新页面。', 'The multiplayer runtime is not ready. Run python3 tools/build_multiplayer_client.py (add --game-dir and --runtime-dir for custom resources), then restart serve_local.py and refresh this page.'],
+  'page.crash': ['游戏已停止（{kind}）：{reason}{advice}', 'The game stopped ({kind}): {reason}{advice}'],
+  'page.crashMemory': ['。可能与内存不足有关，请关闭其他标签页后刷新。', '. Memory may be low. Close other tabs and refresh.'],
+  'page.crashRefresh': ['。请刷新页面。', '. Please refresh this page.'],
+  'page.gpuLost': ['显卡连接已中断（{reason}），画面无法继续显示。请刷新页面。', 'The graphics device disconnected ({reason}). Rendering cannot continue. Please refresh this page.'],
+  'page.loadFailed': ['加载失败：{reason}', 'Loading failed: {reason}'],
+  'page.stall': ['已 {seconds} 秒没有加载进展{step}。设备可能内存不足，请关闭其他标签页或刷新。', 'No loading progress for {seconds} seconds{step}. Memory may be low. Close other tabs or refresh.'],
+  'page.lastStep': ['（上一步：{step}）', ' (last step: {step})'],
+  'page.data': ['游戏数据：{mb} MB{speed}', 'Game data: {mb} MB{speed}'],
+  'page.fps': ['{fps} 帧/秒', '{fps} FPS'],
+  'page.lowMemory': ['已启用低内存模式（浏览器报告 {gb} GB）：请关闭其他标签页。若出现“Aw, Snap!”（崩溃提示）或 SIGILL，表示内存不足。', 'Low-memory mode is enabled (browser reports {gb} GB). Close other tabs. An “Aw, Snap!” crash or SIGILL indicates insufficient memory.'],
+  'page.workerError': ['游戏工作线程出错：{reason}', 'Game worker error: {reason}'],
+  'progress.downloadingCompile': ['正在下载并编译游戏引擎（{value}）', 'Downloading and compiling the engine ({value})'],
+  'progress.downloading': ['正在下载游戏引擎（{value}）', 'Downloading the engine ({value})'],
+  'progress.busy': ['服务器繁忙，正在重试（第 {value} 次）', 'The server is busy, retrying ({value})'],
+});
+
+// Source aliases cover diagnostics received from the unchanged engine and
+// existing connection errors. Unknown diagnostics remain intact for support.
+const textPairs = [
+  ['返回', 'Back'], ['退格', 'Backspace'], ['GTA V 地图', 'GTA V Map'], ['GTA VI 地图', 'GTA VI Map'],
+  ['沙盒模式', 'Sandbox Mode'], ['空格', 'Space'], ['故事模式', 'Story Mode'], ['回车', 'Enter'],
+  ['正在加载故事模式', 'Loading Story Mode'], ['正在加载沙盒模式：GTA V 地图', 'Loading Sandbox: GTA V Map'],
+  ['正在加载沙盒模式：GTA VI 地图', 'Loading Sandbox: GTA VI Map'], ['恢复战局中', 'Rejoining Session'],
+  ['加入战局中', 'Joining Session'], ['请选择地图以继续', 'Choose a map to continue'],
+  ['请选择故事模式、沙盒模式或在线战局以继续', 'Choose Story Mode, Sandbox Mode, or an Online Session to continue'],
+  ['正在读取服务器线路…', 'Loading servers…'], ['可选择线路，也可手动输入 IP:端口。', 'Choose a server or enter IP:port manually.'],
+  ['请选择远程线路或输入服务器 IP:端口。', 'Choose a server or enter its IP:port.'],
+  ['服务器线路请求失败', 'Could not load the server list'], ['请输入 1 至 24 个字符的昵称。', 'Enter a nickname with 1 to 24 characters.'],
+  ['浏览器禁止保存战局设置，请允许此网站的会话存储后重试。', 'Your browser cannot save session settings. Allow session storage for this site and try again.'],
+  ['正在加入战局…', 'Joining session…'], ['主线路', 'Main server'], ['实验线路', 'Experimental server'],
+  ['公共战局', 'Public Session'], ['实验战局', 'Experimental Session'],
+  ['请输入有效的服务器 IP 或地址。', 'Enter a valid server IP or address.'],
+  ['服务器地址仅支持 ws:// 或 wss://。', 'Server addresses must use ws:// or wss://.'],
+  ['服务器地址格式不正确，例如 192.168.1.10:8787 或 [::1]:8787。', 'Invalid server address. For example: 192.168.1.10:8787 or [::1]:8787.'],
+  ['请输入不含用户名、密码或片段的 ws:// 或 wss:// 地址。', 'Enter a ws:// or wss:// address without credentials or a fragment.'],
+  ['HTTPS 页面需要 wss:// 服务器地址，请使用加密连接。', 'HTTPS pages require a wss:// server address. Use an encrypted connection.'],
+  ['远程服务器地址无效。', 'Invalid remote server address.'],
+  ['远程 WebSocket 端点必须提供完整的 ws:// 或 wss:// 地址。', 'The remote WebSocket endpoint must be a complete ws:// or wss:// address.'],
+  ['远程配置响应失败', 'Could not load remote configuration'],
+  ['连接超时，请检查服务器地址及端口后重试。', 'Connection timed out. Check the server address and port, then try again.'],
+  ['已退出公共战局', 'Left Public Session'], [' 正在重新连接…', ' Reconnecting…'],
+  ['服务器长时间未响应。', 'The server has not responded for too long.'],
+  ['服务器战局不兼容，请使用 GTA V 公共战局服务器。', 'Incompatible session. Use a GTA V public session server.'],
+  ['服务器消息格式无效。', 'Invalid server message.'], ['服务器尚未完成连接确认。', 'The server has not confirmed the connection.'],
+  ['服务器协议不兼容。', 'Incompatible server protocol.'], ['服务器武器规则格式无效。', 'Invalid server weapon rules.'],
+  ['服务器战局脚本策略格式无效。', 'Invalid server session script policy.'],
+  ['服务器未提供已声明的战局脚本策略。', 'The server did not provide its declared session script policy.'],
+  ['服务器未提供入局确认状态。', 'The server did not provide its entry readiness state.'],
+  ['服务器玩家信息无效。', 'Invalid player information from the server.'], ['服务器尚未确认玩家身份。', 'The server has not confirmed your identity.'],
+  ['已加入公共战局', 'Joined Public Session'], ['服务器战局状态格式无效。', 'Invalid session state from the server.'],
+  ['正在同步公共战局玩家', 'Synchronizing Public Session Players'],
+  ['服务器投射物事件格式无效。', 'Invalid projectile event from the server.'], ['服务器投射物基线格式无效。', 'Invalid projectile baseline from the server.'],
+  ['服务器角色状态格式无效。', 'Invalid character state from the server.'], ['服务器射击事件格式无效。', 'Invalid shot event from the server.'],
+  ['服务器装备状态无效。', 'Invalid equipment state from the server.'],
+  ['服务器心跳格式无效。', 'Invalid server heartbeat.'], ['碰撞观测未通过服务器校验，本次判定已跳过。', 'The server rejected the collision observation. This result was skipped.'],
+  ['服务器武器目录不识别当前武器，请更新服务端资源目录。', 'The server does not recognize this weapon. Update its weapon catalog.'],
+  ['武器切换尚未同步，请稍后重新射击。', 'The weapon change has not synchronized yet. Try firing again shortly.'],
+  ['服务器未接受这次操作', 'The server did not accept this action'], ['服务器未能完成操作。', 'The server could not complete this action.'],
+  ['服务器消息类型不兼容，请检查服务器版本。', 'Incompatible server message type. Check the server version.'],
+  ['正在连接服务器', 'Connecting to Server'], ['无法连接服务器。', 'Cannot connect to the server.'], ['服务器连接超时。', 'The server connection timed out.'],
+  ['服务器消息超过允许的大小。', 'The server message exceeds the allowed size.'], ['服务器消息无法解析。', 'Cannot parse the server message.'],
+  ['连接失败，请检查服务器 IP 和端口。', 'Connection failed. Check the server IP and port.'], ['战局连接已中断。', 'The session connection was interrupted.'],
+  ['游戏桥接收器必须是函数。', 'The game bridge receiver must be a function.'], ['已取消连接。', 'Connection cancelled.'],
+  ['连接未完成，请确认战局服务器地址', 'Connection incomplete. Check the session server address'],
+  ['请输入昵称与服务器地址以加入战局', 'Enter your nickname and server address to join a session'],
+  ['页面未启用跨域隔离：请通过 HTTPS 或 localhost 打开，并确认服务器发送了 COOP/COEP 响应头。', 'Cross-origin isolation is unavailable. Open via HTTPS or localhost and ensure the host sends COOP/COEP headers.'],
+  ['点击游戏画面以锁定鼠标（Esc 释放鼠标）', 'Click the game to lock the pointer (Esc to release)'],
+  ['点击游戏画面以锁定鼠标（Esc 释放鼠标，Shift+P 切换键盘模式，= 显示帧率）', 'Click the game to lock the pointer (Esc to release, Shift+P to change keyboard mode, = to show FPS)'],
+  ['错误', 'Error'], ['未处理的异常', 'Unhandled exception'], ['中止', 'Abort'], ['退出', 'Exit'],
+  ['正在编译游戏引擎', 'Compiling the engine'], ['正在启动游戏引擎', 'Starting the engine'], ['正在挂载资源包', 'Mounting archives'],
+  ['正在读取设置', 'Reading settings'], ['正在初始化图形', 'Starting graphics'], ['正在加载着色器', 'Loading shaders'],
+  ['正在加载文字资源', 'Loading text'], ['正在启动音频', 'Starting audio'], ['正在加载音频信息', 'Loading audio metadata'],
+  ['正在启动游戏脚本', 'Starting scripts'], ['正在加载游戏世界', 'Loading the world'], ['正在生成第一帧', 'First frame'],
+  ['正在准备着色器', 'Preparing shaders'], ['加载完成', 'Ready'],
+  ['请点击“确定”终止程序，当前无法安全继续运行。', 'Press Ok to abort the program.  It is not safe to continue.'],
+  ['运行时错误：内存访问越界', 'RuntimeError: memory access out of bounds'], ['运行时错误：执行到不可达指令', 'RuntimeError: unreachable'],
+];
+
+export function resolveLanguage(value) { return /^zh(?:-|_|$)/i.test(String(value || '')) ? 'zh-CN' : 'en'; }
+const browserLanguage = () => resolveLanguage(globalThis.navigator?.languages?.[0] || globalThis.navigator?.language || 'en');
+let languageConfig = { preference: 'system', resolved: browserLanguage(), revision: 0 };
+let launcherConfigured = false, initPromise = null, pollTimer = 0, pollController = null, closed = false, requestSequence = 0;
+const listeners = new Set();
+const aliases = new Map(textPairs.flatMap(pair => pair.map(value => [value, pair])));
+for (const pair of Object.values(messages)) for (const value of pair) aliases.set(value, pair);
+
+export function getLanguage() { return languageConfig.resolved; }
+export function t(key, params = {}) {
+  const pair = messages[key];
+  const text = pair ? pair[getLanguage() === 'en' ? 1 : 0] : String(key);
+  return text.replace(/\{([A-Za-z0-9_]+)\}/g, (match, name) => Object.hasOwn(params, name) ? String(params[name]) : match);
+}
+export function translateText(value) {
+  const text = String(value ?? ''), pair = aliases.get(text);
+  if (pair) return pair[getLanguage() === 'en' ? 1 : 0];
+  for (const [pattern, key] of [
+    [/^(?:Downloading and compiling the engine \(|正在下载并编译游戏引擎（)(.*)[)）]$/, 'progress.downloadingCompile'],
+    [/^(?:Downloading the engine \(|正在下载游戏引擎（)(.*)[)）]$/, 'progress.downloading'],
+    [/^(?:The server is busy, retrying \(|服务器繁忙，正在重试（第 )(\d+)(?:\)| 次）)$/, 'progress.busy'],
+  ]) { const match = pattern.exec(text); if (match) return t(key, { value: match[1] }); }
+  const reconnect = /^(.*)(?: 正在重新连接…| Reconnecting…)$/.exec(text);
+  if (reconnect) return translateText(reconnect[1]) + translateText(' 正在重新连接…');
+  const prefixPairs = [
+    ['游戏引擎下载失败：', 'engine download failed: '], ['Scaleform 字体预加载失败：', 'Scaleform font preload failed: '],
+    ['工作线程出错：', 'worker error: '],
+  ];
+  for (const pair of prefixPairs) for (const prefix of pair) if (text.startsWith(prefix)) return pair[getLanguage() === 'en' ? 1 : 0] + translateText(text.slice(prefix.length));
+  if (getLanguage() === 'en') return text.replace(/线程异常（([^)]+)）：/g, 'THREAD REJECTION ($1): ')
+    .replace(/运行时错误：内存访问越界/g, 'RuntimeError: memory access out of bounds').replace(/运行时错误：执行到不可达指令/g, 'RuntimeError: unreachable');
+  return text.replace(/THREAD REJECTION \(([^)]+)\): /g, '线程异常（$1）：')
+    .replace(/RuntimeError: memory access out of bounds/g, '运行时错误：内存访问越界').replace(/RuntimeError: unreachable/g, '运行时错误：执行到不可达指令')
+    .replace(/^\[wasm\] hang report (\d+): no engine log line for (\d+) s; blocked threads:/, '[wasm] 卡顿报告 $1：引擎已 $2 秒未输出日志；阻塞线程：');
+}
+
+// GTA's Chinese Scaleform font supports Traditional Chinese. Keep this exact
+// system-message catalog separate from browser UI translations and player text.
+const gameTextMessages = Object.freeze({
+  '连接超时，请检查服务器地址及端口后重试。': '連線逾時，請檢查伺服器位址及連接埠後重試。',
+  '已退出公共战局': '已退出公共戰局',
+  ' 正在重新连接…': ' 正在重新連線…',
+  '服务器长时间未响应。': '伺服器長時間未回應。',
+  '服务器战局不兼容，请使用 GTA V 公共战局服务器。': '伺服器戰局不相容，請使用 GTA V 公共戰局伺服器。',
+  '服务器消息格式无效。': '伺服器訊息格式無效。',
+  '服务器尚未完成连接确认。': '伺服器尚未完成連線確認。',
+  '服务器协议不兼容。': '伺服器協定不相容。',
+  '服务器武器规则格式无效。': '伺服器武器規則格式無效。',
+  '服务器战局脚本策略格式无效。': '伺服器戰局腳本策略格式無效。',
+  '服务器未提供已声明的战局脚本策略。': '伺服器未提供已宣告的戰局腳本策略。',
+  '服务器未提供入局确认状态。': '伺服器未提供入局確認狀態。',
+  '服务器玩家信息无效。': '伺服器玩家資訊無效。',
+  '服务器尚未确认玩家身份。': '伺服器尚未確認玩家身分。',
+  '加入战局中': '加入戰局中',
+  '已加入公共战局': '已加入公共戰局',
+  '服务器战局状态格式无效。': '伺服器戰局狀態格式無效。',
+  '正在同步公共战局玩家': '正在同步公共戰局玩家',
+  '服务器投射物事件格式无效。': '伺服器投射物事件格式無效。',
+  '服务器投射物基线格式无效。': '伺服器投射物基準格式無效。',
+  '服务器角色状态格式无效。': '伺服器角色狀態格式無效。',
+  '服务器射击事件格式无效。': '伺服器射擊事件格式無效。',
+  '服务器装备状态无效。': '伺服器裝備狀態無效。',
+  '服务器心跳格式无效。': '伺服器心跳格式無效。',
+  '碰撞观测未通过服务器校验，本次判定已跳过。': '碰撞觀測未通過伺服器驗證，這次判定已略過。',
+  '服务器武器目录不识别当前武器，请更新服务端资源目录。': '伺服器武器目錄無法識別目前武器，請更新伺服器資源目錄。',
+  '武器切换尚未同步，请稍后重新射击。': '武器切換尚未同步，請稍後重新射擊。',
+  '服务器未接受这次操作': '伺服器未接受這次操作',
+  '服务器未能完成操作。': '伺服器未能完成操作。',
+  '服务器消息类型不兼容，请检查服务器版本。': '伺服器訊息類型不相容，請檢查伺服器版本。',
+  '正在连接服务器': '正在連線至伺服器',
+  '无法连接服务器。': '無法連線至伺服器。',
+  '服务器连接超时。': '伺服器連線逾時。',
+  '服务器消息超过允许的大小。': '伺服器訊息超過允許的大小。',
+  '服务器消息无法解析。': '無法解析伺服器訊息。',
+  '连接失败，请检查服务器 IP 和端口。': '連線失敗，請檢查伺服器 IP 和連接埠。',
+  '战局连接已中断。': '戰局連線已中斷。',
+  '已取消连接。': '已取消連線。',
+});
+const gameTextAliases = new Map(Object.entries(gameTextMessages).flatMap(([source, chinese]) => {
+  const english = aliases.get(source)?.[1];
+  const pair = { chinese, english };
+  return [source, chinese, english].filter(value => typeof value === 'string').map(value => [value, pair]);
+}));
+export function translateGameText(value, language = getLanguage()) {
+  const text = String(value ?? ''), pair = gameTextAliases.get(text);
+  if (pair) return language === 'en' ? pair.english || 'The server could not complete this action. Please try again.' : pair.chinese;
+  const reconnect = /^(.*)(?: 正在重新连接…| 正在重新連線…| Reconnecting…)$/.exec(text);
+  if (reconnect) return translateGameText(reconnect[1], language) + translateGameText(' 正在重新连接…', language);
+  // Unknown Chinese diagnostics stay in browser/log surfaces. Never forward
+  // arbitrary Simplified Chinese into the native font or rewrite player text.
+  if (/\p{Script=Han}/u.test(text)) return language === 'en'
+    ? 'The server could not complete this action. Please try again.' : '伺服器未能完成操作，請稍後重試。';
+  return text;
+}
+
+// These are typed protocol errors, not arbitrary server/player text. Retain the
+// Chinese diagnostic for Chinese UI, and translate stable codes for English UI.
+// Unknown diagnostics never become an untranslated English product message.
+const serverErrorMessages = Object.freeze({
+  invalid_owner: 'This action is not authorized for the current entity owner.',
+  not_owner: 'You do not currently control this entity. Wait for synchronization and try again.',
+  invalid_request: 'This action could not be verified. Please try it again.',
+  too_far: 'Move closer to the target and try again.',
+  room_full: 'The public session is full. Please try again shortly.',
+  server_full: 'The server is full. Please try again shortly.',
+  world_full: 'The world has reached its entity limit. Please try again shortly.',
+  projectile_limit: 'Wait for the active projectiles to finish before firing again.',
+  duplicate_player: 'Your character is already present in this session.',
+  invalid_message: 'The server could not verify this message. Update the launcher if this continues.',
+  invalid_json: 'The server could not read this message. Reconnect if this continues.',
+  unknown_type: 'This action requires a compatible launcher and server version.',
+  client_world_rules_required: 'Update the launcher to join this public session.',
+  server_geometry_unavailable: 'This server is missing its character collision data. Contact the server operator.',
+  capability_required: 'Update the launcher to use this session feature.',
+  public_session_only: 'Choose a public session to continue.',
+  not_in_room: 'Join the public session before performing this action.',
+  resume_denied: 'The previous session could not be restored. Join the session again.',
+  invalid_resume: 'The previous session could not be restored. Join the session again.',
+  resume_expired: 'The previous session expired. Join the session again.',
+  invalid_hello: 'The connection could not be verified. Update the launcher and reconnect.',
+  protocol_mismatch: 'The launcher and server versions are incompatible. Update the launcher and reconnect.',
+  handshake_timeout: 'The connection was not confirmed in time. Please reconnect.',
+  rate_limited: 'Wait a moment and try this action again.',
+  cooldown: 'This action is not ready yet. Try again shortly.',
+  stale_seq: 'This action has expired. Please try it again.',
+  stale_input: 'This action has expired. Please try it again.',
+  stale_owner: 'Control of this entity changed. Wait for synchronization and try again.',
+  invalid_lease: 'Control of this entity could not be verified. Wait for synchronization and try again.',
+  invalid_revision: 'This entity is still synchronizing. Try again shortly.',
+  stale_revision: 'This entity changed. Wait for synchronization and try again.',
+  stale_generation: 'The target changed. Select the current target and try again.',
+  invalid_ped_pose: 'Character pose is still synchronizing. Wait a moment and try again.',
+  weapon_not_owned: 'This weapon is not available in your session inventory. Choose an available weapon.',
+  weapon_has_no_ammo: 'This weapon has no supported firing ammunition.',
+  weapon_reloading: 'This weapon is reloading. Wait before firing again.',
+  weapon_changed: 'The weapon changed. Select it again after synchronization.',
+  out_of_ammo: 'This weapon is out of ammunition. Collect an ammunition supply.',
+  empty_clip: 'The magazine is empty. Reload before firing.',
+  reload_not_applicable: 'This weapon does not use a magazine reload.',
+  unsupported_reload: 'This weapon reload is not supported yet.',
+  reload_in_progress: 'This weapon is already reloading.',
+  reload_not_needed: 'The magazine is already full.',
+  reload_not_ready: 'Wait for the reload to finish before completing it.',
+  stale_reload: 'This reload has expired. Reload again if needed.',
+  unknown_pickup: 'This supply point is no longer available.',
+  pickup_requires_on_foot: 'Leave the vehicle to collect this supply.',
+  pickup_no_capacity: 'You already have this equipment and its ammunition is full.',
+  pickup_out_of_range: 'Move closer to this supply point to collect it.',
+  pickup_unavailable: 'This supply point is not available yet. Try again shortly.',
+  invalid_equipment_state: 'Equipment is available after your character is alive and synchronized.',
+  invalid_equipment_action: 'This equipment action could not be verified.',
+  stale_equipment_seq: 'This equipment action has expired. Please try it again.',
+  stale_equipment_shot: 'This equipment shot has expired. Please fire again.',
+  stale_shot_lifecycle: 'Your character changed during this shot. Wait for synchronization and try again.',
+  invalid_shot_time: 'The firing time could not be verified. Aim again and retry.',
+  unknown_shot_time: 'The firing time is still synchronizing. Try again shortly.',
+  stale_epoch: 'This action belongs to an earlier session. Wait for synchronization and try again.',
+  wrong_world: 'This action belongs to an earlier session. Wait for synchronization and try again.',
+  attached_entity: 'Leave the vehicle before moving this character independently.',
+  dead_entity: 'This entity is no longer alive. Choose another target.',
+  destroyed_vehicle: 'This vehicle has been destroyed and cannot be used.',
+  static_entity: 'This object cannot be moved.',
+  invalid_movement: 'The server corrected this movement. Wait for synchronization and try again.',
+  invalid_component: 'This action is not supported by the selected entity.',
+  invalid_batch: 'The server could not verify this update. Wait for synchronization and try again.',
+  invalid_tick: 'The world is still synchronizing. Try again shortly.',
+  invalid_seat: 'This seat is unavailable for the current character.',
+  seat_unavailable: 'This seat is unavailable. Choose another seat.',
+  unknown_entity: 'The target is no longer available. Choose another target.',
+  unsupported_model: 'This character or vehicle is not supported by the server.',
+  unsupported_weapon: 'The server does not recognize this weapon. Update its weapon catalog.',
+  weapon_mismatch: 'The weapon change has not synchronized yet. Try firing again shortly.',
+  invalid_shot: 'The server could not verify this shot. Aim again and retry.',
+  not_ready: 'Your character is still synchronizing. Try again shortly.',
+  entry_not_ready: 'Your character and scene are still loading.',
+  entry_timeout: 'Entry loading timed out. Please reconnect.',
+  player_dead: 'You died. Wait for the server to respawn your character.',
+  unsupported_interaction: 'This interaction is not currently available.',
+  unsupported_simulation: 'This action is not currently supported by the server.',
+  simulation_not_ready: 'This entity is still loading. Try again shortly.',
+  player_input_required: 'Perform this action with your own character.',
+  health_increase_denied: 'Health recovery must be confirmed by the server.',
+  invalid_target: 'Choose a valid target and try again.',
+  invalid_reason: 'The server could not verify the cause of this action.',
+  not_facing: 'Face the target and try again.',
+  snapshot_required: 'Wait for the world to synchronize before trying again.',
+  invalid_collision: 'The server could not verify this collision. This result was skipped.',
+  stale_collision: 'This collision observation has expired. This result was skipped.',
+  unconfirmed_arrest: 'The arrest has not been confirmed by the server.',
+});
+export function localizeServerError(error, language = getLanguage()) {
+  if (language === 'en') return typeof error?.code === 'string' && Object.hasOwn(serverErrorMessages, error.code)
+    ? serverErrorMessages[error.code] : 'The server could not complete this action. Please try again.';
+  return typeof error?.chinese === 'string' ? error.chinese
+    : typeof error?.message === 'string' ? error.message.slice(0, 300)
+    : '服务器未能完成操作。';
+}
+
+// Stable protocol codes choose reviewed native wording. Server diagnostics
+// may contain Simplified Chinese, user input or exception details, so they are
+// never used as native display text, including for unknown future codes.
+const gameServerErrorMessages = Object.freeze({
+  invalid_owner: '目前實體所有者無權執行這項操作。',
+  not_owner: '您目前未控制此實體，請等待同步後重試。',
+  invalid_request: '無法驗證這項操作，請重試。',
+  too_far: '請靠近目標後重試。',
+  room_full: '公共戰局已滿，請稍後重試。',
+  server_full: '伺服器已滿，請稍後重試。',
+  world_full: '世界已達實體數量上限，請稍後重試。',
+  projectile_limit: '投射物數量已達上限，請稍後再射擊。',
+  duplicate_player: '您的角色已在這個戰局中。',
+  invalid_message: '伺服器無法驗證這則訊息，若持續發生請更新啟動器。',
+  invalid_json: '伺服器無法讀取這則訊息，若持續發生請重新連線。',
+  unknown_type: '這項操作需要相容的啟動器與伺服器版本。',
+  client_world_rules_required: '請更新啟動器後加入公共戰局。',
+  server_geometry_unavailable: '伺服器缺少角色碰撞資料，請聯絡伺服器管理員。',
+  capability_required: '請更新啟動器以使用這項戰局功能。',
+  public_session_only: '請選擇公共戰局以繼續。',
+  not_in_room: '請先加入公共戰局再執行這項操作。',
+  resume_denied: '無法恢復先前的戰局，請重新加入。',
+  invalid_resume: '無法恢復先前的戰局，請重新加入。',
+  resume_expired: '先前的戰局已逾期，請重新加入。',
+  invalid_hello: '無法驗證連線，請更新啟動器後重新連線。',
+  protocol_mismatch: '啟動器與伺服器版本不相容，請更新啟動器後重新連線。',
+  handshake_timeout: '連線確認逾時，請重新連線。',
+  rate_limited: '操作過快，請稍後重試。',
+  cooldown: '這項操作尚未就緒，請稍後重試。',
+  stale_seq: '這項操作已逾期，請重試。',
+  stale_input: '這項操作已逾期，請重試。',
+  stale_owner: '實體控制權已變更，請等待同步後重試。',
+  invalid_lease: '無法驗證實體控制權，請等待同步後重試。',
+  invalid_revision: '實體仍在同步中，請稍後重試。',
+  stale_revision: '實體已變更，請等待同步後重試。',
+  stale_generation: '目標已變更，請選擇目前目標後重試。',
+  invalid_ped_pose: '角色姿態仍在同步中，請稍後重試。',
+  weapon_not_owned: '戰局裝備中沒有這把武器，請選擇可用武器。',
+  weapon_has_no_ammo: '這把武器沒有支援的射擊彈藥。',
+  weapon_reloading: '武器正在裝填，請稍後再射擊。',
+  weapon_changed: '武器已變更，請等待同步後重新選擇。',
+  out_of_ammo: '武器彈藥已用盡，請領取彈藥補給。',
+  empty_clip: '彈匣已空，請裝填後再射擊。',
+  reload_not_applicable: '這把武器不需要彈匣裝填。',
+  unsupported_reload: '目前尚未支援這把武器的裝填操作。',
+  reload_in_progress: '武器已在裝填中。',
+  reload_not_needed: '彈匣已滿。',
+  reload_not_ready: '請等待裝填完成。',
+  stale_reload: '這次裝填已逾期，請視需要重新裝填。',
+  unknown_pickup: '這個補給點已失效。',
+  pickup_requires_on_foot: '請離開載具後領取補給。',
+  pickup_no_capacity: '您已有這項裝備，而且彈藥已滿。',
+  pickup_out_of_range: '請靠近補給點後領取。',
+  pickup_unavailable: '補給點尚未就緒，請稍後重試。',
+  invalid_equipment_state: '請等待角色存活且同步完成後使用裝備。',
+  invalid_equipment_action: '無法驗證這項裝備操作。',
+  stale_equipment_seq: '這項裝備操作已逾期，請重試。',
+  stale_equipment_shot: '這次裝備射擊已逾期，請重新射擊。',
+  stale_shot_lifecycle: '射擊期間角色已變更，請等待同步後重試。',
+  invalid_shot_time: '無法驗證射擊時間，請重新瞄準後重試。',
+  unknown_shot_time: '射擊時間仍在同步中，請稍後重試。',
+  stale_epoch: '這項操作屬於先前戰局，請等待同步後重試。',
+  wrong_world: '這項操作屬於先前戰局，請等待同步後重試。',
+  attached_entity: '請離開載具後再獨立移動角色。',
+  dead_entity: '實體已死亡，請選擇其他目標。',
+  destroyed_vehicle: '載具已毀損，無法使用。',
+  static_entity: '無法移動這個物件。',
+  invalid_movement: '伺服器已修正移動位置，請等待同步後重試。',
+  invalid_component: '所選實體不支援這項操作。',
+  invalid_batch: '伺服器無法驗證更新，請等待同步後重試。',
+  invalid_tick: '世界仍在同步中，請稍後重試。',
+  invalid_seat: '目前角色無法使用這個座位。',
+  seat_unavailable: '座位不存在或已被占用，請選擇其他座位。',
+  unknown_entity: '目標已失效，請選擇其他目標。',
+  unsupported_model: '伺服器不支援這個角色或載具。',
+  unsupported_weapon: '伺服器無法識別這把武器，請更新武器目錄。',
+  weapon_mismatch: '武器切換尚未同步，請稍後重新射擊。',
+  invalid_shot: '伺服器無法驗證這次射擊，請重新瞄準後重試。',
+  not_ready: '角色仍在同步中，請稍後重試。',
+  entry_not_ready: '角色與場景仍在載入中。',
+  entry_timeout: '戰局載入逾時，請重新連線。',
+  player_dead: '您已陣亡，請等待伺服器重生角色。',
+  unsupported_interaction: '目前無法使用這項互動。',
+  unsupported_simulation: '伺服器目前不支援這項操作。',
+  simulation_not_ready: '實體仍在載入中，請稍後重試。',
+  player_input_required: '請使用自己的角色執行這項操作。',
+  health_increase_denied: '生命值恢復必須由伺服器確認。',
+  invalid_target: '請選擇有效目標後重試。',
+  invalid_reason: '伺服器無法驗證這項操作的原因。',
+  not_facing: '請面向目標後重試。',
+  snapshot_required: '請等待世界同步完成後重試。',
+  invalid_collision: '伺服器無法驗證這次碰撞，判定已略過。',
+  stale_collision: '碰撞觀測已逾期，判定已略過。',
+  unconfirmed_arrest: '逮捕尚未獲得伺服器確認。',
+});
+export function localizeGameServerError(error, language = getLanguage()) {
+  if (language === 'en') return localizeServerError(error, language);
+  return typeof error?.code === 'string' && Object.hasOwn(gameServerErrorMessages, error.code)
+    ? gameServerErrorMessages[error.code] : '伺服器未能完成操作，請稍後重試。';
+}
+
+export function setLanguage(value) {
+  let next;
+  if (typeof value === 'string') {
+    if (!['system', 'zh-CN', 'en'].includes(value)) return false;
+    next = { preference: value, resolved: value === 'system' ? browserLanguage() : value, revision: languageConfig.revision };
+  } else {
+    if (!value || !['system', 'zh-CN', 'en'].includes(value.preference)
+      || !(value.preference === 'system' && value.resolved === null || ['zh-CN', 'en'].includes(value.resolved))
+      || value.preference !== 'system' && value.resolved !== value.preference
+      || !Number.isSafeInteger(value.revision) || value.revision < 0) return false;
+    next = { preference: value.preference, resolved: value.resolved || browserLanguage(), revision: value.revision };
+  }
+  const changed = next.resolved !== languageConfig.resolved || next.preference !== languageConfig.preference || next.revision !== languageConfig.revision;
+  languageConfig = next;
+  if (globalThis.document?.documentElement) document.documentElement.lang = next.resolved;
+  if (changed) {
+    const detail = { language: next.resolved, ...next };
+    for (const listener of [...listeners]) { try { listener(detail); } catch {} }
+    if (globalThis.document?.dispatchEvent && typeof globalThis.CustomEvent === 'function') document.dispatchEvent(new CustomEvent('gta-language-change', { detail }));
+  }
+  return true;
+}
+export function onLanguageChange(callback) { listeners.add(callback); return () => listeners.delete(callback); }
+
+async function refreshLanguage() {
+  if (closed) return getLanguage();
+  const sequence = ++requestSequence;
+  const controller = pollController = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 3000);
+  try {
+    const response = await fetch('/api/language', { cache: 'no-store', signal: controller.signal });
+    if (response.ok) {
+      const snapshot = await response.json();
+      if (!closed && !controller.signal.aborted && sequence === requestSequence && setLanguage(snapshot)) launcherConfigured = true;
+    }
+  } catch { /* Keep the last launcher selection through temporary disconnections. */ }
+  finally { clearTimeout(timeout); if (pollController === controller) pollController = null; }
+  if (!launcherConfigured) setLanguage('system');
+  return getLanguage();
+}
+function schedulePoll() {
+  clearTimeout(pollTimer);
+  if (!closed) pollTimer = setTimeout(async () => {
+    if (globalThis.document?.visibilityState !== 'hidden') await refreshLanguage();
+    schedulePoll();
+  }, 2000);
+}
+export function initLanguage() {
+  if (initPromise) return initPromise;
+  closed = false;
+  initPromise = refreshLanguage().then(() => {
+    schedulePoll();
+    globalThis.document?.addEventListener?.('visibilitychange', () => {
+      if (document.visibilityState === 'visible') { pollController?.abort(); refreshLanguage(); }
+    });
+    globalThis.addEventListener?.('pagehide', () => { closed = true; clearTimeout(pollTimer); pollController?.abort(); });
+    globalThis.addEventListener?.('pageshow', (event) => {
+      if (event.persisted) { closed = false; refreshLanguage(); schedulePoll(); }
+    });
+    return getLanguage();
+  });
+  return initPromise;
+}

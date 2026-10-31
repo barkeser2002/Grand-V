@@ -1,0 +1,54 @@
+{
+  "appId": "xyz.royalnetwork.fiveweb",
+  "productName": "FiveWeb",
+  "copyright": "Copyright © royalnetwork.xyz",
+  "directories": {
+    "output": "dist",
+    "buildResources": "build"
+  },
+  "files": [
+    "src/**/*",
+    "pages/**/*",
+    "build/icon.png",
+    "build/icon.ico",
+    "package.json",
+    "!**/*.map"
+  ],
+  "asar": true,
+  "npmRebuild": false,
+  "electronLanguages": ["en-US", "tr-TR"],
+  "extraMetadata": {
+    "main": "src/main.js"
+  },
+  "publish": null,
+  "win": {
+    "target": [
+      { "target": "portable", "arch": ["x64"] },
+      { "target": "nsis", "arch": ["x64"] }
+    ],
+    "artifactName": "FiveWeb-${version}-win-x64-${target}.${ext}",
+    "icon": "build/icon.ico",
+    "signAndEditExecutable": true,
+    "verifyUpdateCodeSignature": false
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "shortcutName": "FiveWeb",
+    "uninstallDisplayName": "FiveWeb",
+    "artifactName": "FiveWeb-${version}-win-x64-setup.${ext}"
+  },
+  "portable": {
+    "artifactName": "FiveWeb-${version}-win-x64-portable.${ext}"
+  },
+  "linux": {
+    "target": [
+      { "target": "AppImage", "arch": ["x64"] },
+      { "target": "dir", "arch": ["x64"] }
+    ],
+    "category": "Game",
+    "icon": "build/icon.png",
+    "artifactName": "FiveWeb-${version}-linux-x64.${ext}"
+  }
+}

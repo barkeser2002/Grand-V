@@ -1,0 +1,7 @@
+{
+  "name": "welcome",
+  "version": "0.1.0",
+  "apiVersion": "fiveweb-js-v1",
+  "client": ["client.js"],
+  "server": ["server.mjs"]
+}

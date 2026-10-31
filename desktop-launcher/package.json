@@ -1,0 +1,25 @@
+{
+  "name": "fiveweb-desktop",
+  "productName": "FiveWeb",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FiveWeb dedicated desktop launcher: a locked-down Electron window that loads only https://fiveweb.royalnetwork.xyz.",
+  "license": "UNLICENSED",
+  "main": "src/main.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "test": "node --test --test-reporter=spec test/*.test.js",
+    "smoke": "electron . --smoke",
+    "build:dir": "electron-builder --linux dir --publish never",
+    "build:linux": "electron-builder --linux AppImage dir --x64 --publish never",
+    "build:win": "electron-builder --win portable nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "45.1.0",
+    "electron-builder": "26.18.0"
+  }
+}

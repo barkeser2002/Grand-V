@@ -1,0 +1,80 @@
+/* FiveWeb glue over the ak4y multicharacter theme (css/main.css). */
+html, body { margin: 0; background: #07090c; color: #fff; }
+[hidden] { display: none !important; }
+.fw-bg { position: fixed; inset: 0; background: #07090c url("images/bg.jpg") center / cover no-repeat; }
+.fw-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, #000c 0%, #0006 45%, #0008 100%); }
+button.buttonItem, button.rightButtonItem, button.sexButton, button.redeemButton, button.agreeButton { border: 0; padding: 0; background: none; font: inherit; color: inherit; }
+button.redeemButton, button.agreeButton { background: rgba(106, 106, 106, 0.51); border: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.8); }
+button.redeemButton:hover, button.agreeButton:hover, button.redeemButton:focus-visible, button.agreeButton:focus-visible { background: rgba(119, 188, 95, 0.45); color: #fff; outline: none; }
+.buttonItem img, .rightButtonItem img { display: block; width: 100%; }
+.buttonItem:focus-visible, .rightButtonItem:focus-visible, .charItem:focus-visible, .sexButton:focus-visible { outline: 2px solid #77bc5f; outline-offset: 2px; }
+.sexButton { align-items: center; gap: .5vw; padding-left: .6vw !important; }
+.fw-sex-icon { font-size: 1.2vw; }
+.fw-delete-btn .inButtonText { background: linear-gradient(180deg, rgba(237, 98, 98, 0) -51.3%, rgba(237, 98, 98, 0.74) 100%), #6a6a6a; box-shadow: 0 0 67px rgba(242, 104, 104, 0.4); }
+.fw-ghost { opacity: .75; }
+.generalSection { display: flex; }
+.generalSection.fw-hidden { display: none; }
+.charItem { display: block; width: 100%; text-align: left; color: inherit; font: inherit; }
+.charItem.locked { cursor: not-allowed; opacity: .6; }
+.charCreateRight.fw-open { display: block; }
+.charInfoRight.fw-open { display: block; }
+
+/* Login / sign-up modal: the ak4y "redeem" box, taller for two fields. */
+.fw-auth { display: block; z-index: 99999; background: rgba(0, 0, 0, 0.35); }
+.fw-auth .slotRedeemMain { height: auto; min-height: 0; width: min(30vw, 92vw); min-width: 340px; padding-bottom: 1.4vw; transform: translate(-50%, -50%); margin: 0 !important; }
+.fw-auth .redeemTitleArea { font-size: max(1.5vw, 20px); height: auto; display: flex; gap: .6vw; }
+.fw-auth .redeemCodeText { color: #fff; }
+.fw-field { display: block; margin-top: .9vw; }
+.fw-field .inputTitle { display: block; width: 85%; margin: 0 7.5% .3vw; font-family: "Oswald"; color: rgba(255, 255, 255, .7); font-size: max(.8vw, 12px); letter-spacing: .05em; }
+.fw-auth .redeemInput { box-sizing: border-box; height: max(3vw, 42px); font-size: max(1vw, 15px); color: #fff; }
+.fw-auth .redeemInput:focus { border-color: #77bc5f; }
+.fw-auth .redeemButtonArea { height: max(2.6vw, 40px); margin-top: 1vw; }
+.fw-auth .redeemButton { font-size: max(1.1vw, 15px); line-height: 1; }
+.fw-auth #fw-auth-submit { background: linear-gradient(180deg, rgba(98, 237, 128, 0) -51.3%, rgba(98, 237, 128, 0.74) 100%), #6a6a6a; color: #0b0d0a; font-weight: 600; }
+.fw-hint { width: 85%; margin: .7vw 7.5% 0; font-family: "Oswald Light"; color: rgba(255, 255, 255, .55); font-size: max(.8vw, 12px); }
+.fw-error { min-height: 1.2em; width: 85%; margin: .4vw 7.5% 0; font-family: "Oswald"; color: #ff8d80; font-size: max(.8vw, 12px); }
+.fw-left-error { margin-left: 25%; width: 60%; }
+.agreeDeleteSection { display: block; }
+.agreeSection { transform: translate(-50%, -50%); margin: 0 !important; }
+.agreeButtonAreas { display: flex; justify-content: center; gap: 1vw; }
+.fw-danger { background: rgba(200, 60, 60, .55) !important; color: #fff !important; }
+
+.fw-top { position: fixed; top: 1.2vw; right: 1.6vw; z-index: 999; display: flex; gap: 1vw; align-items: center; font-family: "Oswald"; font-size: max(.9vw, 13px); }
+.fw-top-link { color: rgba(255, 255, 255, .75); text-decoration: none; background: rgba(0, 0, 0, .45); border: 1px solid rgba(255, 255, 255, .15); padding: .35vw .8vw; cursor: pointer; font: inherit; }
+.fw-top-link:hover { color: #fff; border-color: #77bc5f; }
+.fw-top-user { color: #77bc5f; }
+.fw-loading { display: block; background: #07090ccc; }
+.fw-loading.fw-done { display: none; }
+.fw-loading .charInformationText { text-align: center; font-family: "Oswald"; margin-top: 1vw; }
+.fw-loading .charInfoText { font-size: 1.6vw; letter-spacing: .1em; }
+.fw-loading .loadingText { color: #77bc5f; font-size: 1vw; }
+button, input, select { font-family: "Oswald", system-ui, sans-serif; }
+.charItemNameArea .firstName { margin-right: .35em; }
+.fw-hint { color: rgba(255, 255, 255, .75); }
+.leftDescription { color: rgba(255, 255, 255, .62); }
+.charItem.create { background: rgba(217, 217, 217, 0.16); }
+.charItem.create:hover { border-color: #77bc5f; }
+#fiveweb-language { background: rgba(0, 0, 0, .55) !important; color: rgba(255, 255, 255, .8) !important; border: 1px solid rgba(255, 255, 255, .15) !important; border-radius: 0 !important; padding: .3vw .6vw !important; font-family: "Oswald" !important; font-size: max(.8vw, 12px) !important; }
+#fiveweb-language option { color: #000; }
+.fw-top-link { font-family: "Oswald"; letter-spacing: .04em; }
+
+/* Short windows (1080p minus browser bars ~ 930 px): the ak4y layout is sized in vw for 16:9,
+   so the list pushed OYNA/SİL below the fold. Keep the column inside the viewport. */
+.leftWrapper { display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; padding-bottom: max(2vh, 16px); }
+.titleArea { margin-top: min(5.87vw, 7vh); flex: 0 0 auto; }
+.titleRectangle, .leftDescription { flex: 0 0 auto; }
+.charList { flex: 0 1 auto; height: auto; max-height: 28vw; min-height: 0; overflow-y: auto; overflow-x: hidden; margin-top: min(2vw, 2.5vh); }
+.buttonAreas { flex: 0 0 auto; height: auto; min-height: 44px; margin-top: min(1vw, 1.5vh); }
+.fw-left-error { flex: 0 0 auto; }
+.charInfoRight, .charCreateRight { max-height: 100vh; overflow-y: auto; box-sizing: border-box; padding-bottom: 76px; scrollbar-width: thin; }
+@media (max-aspect-ratio: 16/10) { .titleArea { margin-top: 4vh; } }
+
+/* Single button surface: remove the PNG frame and the inset hover-shifting fill. */
+.buttonAreas button.buttonItem { display: flex; align-items: center; justify-content: center; min-height: 48px; height: clamp(48px, 3.5vw, 68px); box-sizing: border-box; border: 1px solid #87d19b; background: linear-gradient(135deg, #91dfa8, #4aa86e); box-shadow: 0 8px 28px #68f28524; transition: filter .15s, transform .15s; }
+.buttonAreas button.buttonItem > img { display: none; }
+.buttonAreas button.buttonItem > .inButtonText,
+.buttonAreas button.buttonItem:hover > .inButtonText { position: static; display: block; width: auto; height: auto; line-height: 1; background: none; border: 0; box-shadow: none; color: #102416; font-size: clamp(16px, 1.3vw, 25px); padding: 12px; }
+.buttonAreas button.buttonItem.fw-delete-btn { border-color: #df8585; background: linear-gradient(135deg, #e89999, #b95c5c); box-shadow: 0 8px 28px #f2686824; }
+.buttonAreas button.buttonItem.fw-delete-btn > .inButtonText { color: #321515; }
+.buttonAreas button.buttonItem:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.buttonAreas button.buttonItem:disabled { opacity: .5; cursor: wait; transform: none; }

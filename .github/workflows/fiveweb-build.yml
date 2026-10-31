@@ -1,0 +1,120 @@
+name: FiveWeb build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['feat/fiveweb-platform']
+    paths:
+      - 'web-host/**'
+      - 'desktop-launcher/**'
+      - '.github/workflows/fiveweb-build.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fiveweb-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-web-host:
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: web-host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web-host/package-lock.json
+      - run: npm ci
+      - name: Test (asset-dependent tests skip when the game mirror is absent)
+        run: npm test
+
+  test-desktop:
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: desktop-launcher
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop-launcher/package-lock.json
+      - name: Install (Electron binary download happens here)
+        run: npm ci
+      - name: Pure policy tests
+        run: npm test
+
+  build-windows:
+    needs: [test-web-host, test-desktop]
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop-launcher
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop-launcher/package-lock.json
+      - run: npm ci
+      - name: Test and build Windows portable and NSIS installer (unsigned)
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: |
+          npm test
+          npx electron-builder --win portable nsis --x64 --publish never
+      - name: Record installer checksums
+        shell: pwsh
+        run: |
+          Get-ChildItem dist -Filter '*.exe' | Get-FileHash -Algorithm SHA256 | ForEach-Object { $_.Hash.ToLower() + '  ' + (Split-Path $_.Path -Leaf) } | Set-Content -Encoding ascii dist/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fiveweb-windows-x64
+          path: |
+            desktop-launcher/dist/*.exe
+            desktop-launcher/dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
+
+  build-linux-smoke:
+    needs: [test-web-host, test-desktop]
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: desktop-launcher
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop-launcher/package-lock.json
+      - name: Install Xvfb and GTK/NSS runtime libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgtk-3-0 libnss3 libasound2 libxss1 libxtst6 libgbm1
+      - run: npm ci
+      - name: Build Linux directory package
+        run: npm run build:dir
+      - name: Prepare packaged Chromium sandbox helper
+        run: |
+          sudo chown root:root dist/linux-unpacked/chrome-sandbox
+          sudo chmod 4755 dist/linux-unpacked/chrome-sandbox
+      - name: Headless packaged smoke launch (exits by itself)
+        env:
+          FIVEWEB_SMOKE_SCREENSHOT: ${{ runner.temp }}/fiveweb-smoke.png
+        run: xvfb-run -a dist/linux-unpacked/fiveweb-desktop --smoke
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fiveweb-linux-smoke
+          path: ${{ runner.temp }}/fiveweb-smoke.png
+          if-no-files-found: warn
+          retention-days: 7

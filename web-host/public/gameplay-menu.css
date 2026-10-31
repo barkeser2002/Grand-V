@@ -1,0 +1,82 @@
+/* Scoped standalone F1 menu. No remote fonts, images or third-party styles. */
+.fwgm {
+  --gm-accent: #ffab58;
+  --gm-border: rgba(255, 255, 255, .19);
+  box-sizing: border-box;
+  width: min(1080px, calc(100vw - 32px));
+  max-height: min(860px, calc(100dvh - 32px));
+  padding: 0;
+  border: 1px solid var(--gm-border);
+  border-top: 3px solid var(--gm-accent);
+  border-radius: 18px;
+  background: rgba(15, 18, 24, .96);
+  color: #f5f5f7;
+  box-shadow: 0 24px 100px #000a;
+  font: 15px/1.5 system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
+  overflow: auto;
+  overscroll-behavior: contain;
+  pointer-events: auto;
+}
+.fwgm *, .fwgm *::before, .fwgm *::after { box-sizing: border-box; }
+.fwgm:not([open]) { display: none; }
+.fwgm::backdrop { background: rgba(0, 0, 0, .56); backdrop-filter: blur(6px); }
+.fwgm .fwgm-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--gm-border);
+  background: #13171ff5;
+}
+.fwgm h2 { margin: 0; font-size: 21px; letter-spacing: .04em; }
+.fwgm h3 { margin: 0 0 10px; font-size: 20px; }
+.fwgm h4 { margin: 0 0 12px; font-size: 16px; overflow-wrap: anywhere; }
+.fwgm p { margin: 8px 0 16px; }
+.fwgm .fwgm-tabs { display: flex; gap: 8px; flex-wrap: wrap; padding: 16px 22px; border-bottom: 1px solid var(--gm-border); }
+.fwgm button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--gm-border);
+  border-radius: 9px;
+  background: #252b36;
+  color: #f5f5f7;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  overflow-wrap: anywhere;
+}
+.fwgm button:hover:not(:disabled) { border-color: var(--gm-accent); background: #363039; }
+.fwgm button[aria-pressed="true"], .fwgm button.fwgm-primary { background: var(--gm-accent); border-color: var(--gm-accent); color: #211308; }
+.fwgm button[aria-pressed="true"]:hover:not(:disabled), .fwgm button.fwgm-primary:hover:not(:disabled) { background: #ffc286; }
+.fwgm button:disabled { opacity: .48; cursor: not-allowed; }
+.fwgm :is(button,input,select):focus-visible { outline: 3px solid #ffd2a4; outline-offset: 3px; }
+.fwgm .fwgm-content { padding: 22px; }
+.fwgm .fwgm-muted, .fwgm small { color: #c0c8d4; }
+.fwgm .fwgm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 225px), 1fr)); align-items: start; gap: 14px; }
+.fwgm .fwgm-card { min-width: 0; padding: 16px; background: #ffffff06; border: 1px solid var(--gm-border); border-radius: 12px; }
+.fwgm .fwgm-card > button { display: block; width: 100%; margin-top: 10px; }
+.fwgm .fwgm-card small { display: block; margin-top: 10px; }
+.fwgm .fwgm-field { display: grid; grid-template-columns: minmax(0, 1fr) 85px; gap: 10px; align-items: center; margin: 10px 0; }
+.fwgm .fwgm-field span { overflow-wrap: anywhere; }
+.fwgm input, .fwgm select { min-width: 0; width: 100%; min-height: 44px; padding: 8px; border: 1px solid #677284; border-radius: 7px; background: #0d1118; color: #fff; font: inherit; }
+.fwgm .fwgm-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--gm-border); }
+.fwgm .fwgm-status { margin: 0; padding: 14px 22px; border-top: 1px solid var(--gm-border); color: #ffd2a4; overflow-wrap: anywhere; }
+.fwgm .fwgm-status:empty { display: none; }
+.fwgm .fwgm-radial { max-width: 640px; margin: 24px auto; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.fwgm .fwgm-radial button { min-height: 100px; border-radius: 24px; background: linear-gradient(145deg, #483324, #242933); }
+@media (max-width: 600px) {
+  .fwgm { width: calc(100vw - 12px); max-height: calc(100dvh - 12px); border-radius: 12px; }
+  .fwgm .fwgm-header, .fwgm .fwgm-tabs, .fwgm .fwgm-content { padding: 14px; }
+  .fwgm .fwgm-tabs { gap: 6px; }
+  .fwgm .fwgm-tabs button { flex: 1 1 28%; padding: 8px; }
+  .fwgm .fwgm-actions > button { flex: 1 1 100%; }
+  .fwgm .fwgm-radial { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .fwgm, .fwgm * { scroll-behavior: auto; transition: none; animation: none; } }

@@ -1,0 +1,12 @@
+{
+  "servers": [
+    {
+      "id": "fiveweb-freeroam",
+      "name": "FiveWeb Freeroam",
+      "capacity": 128,
+      "description": "128 kişilik açık dünya serbest dolaşım sunucusu. Oyuncu konumları eşitlenir; araçlar ve görevler henüz eşitlenmez.",
+      "tags": ["Freeroam", "Deneysel"],
+      "resources": ["welcome"]
+    }
+  ]
+}

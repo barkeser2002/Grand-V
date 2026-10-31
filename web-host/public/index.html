@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="FiveWeb deneysel sunucu tarayıcısı">
+  <title>FiveWeb · Sunucular</title>
+  <link rel="icon" href="/__brand/fiveweb-icon.png">
+  <link rel="stylesheet" href="/__lobby/lobby.css">
+</head>
+<body>
+  <div class="bg-scene" aria-hidden="true">
+    <video class="bg-video" autoplay muted loop playsinline preload="metadata" poster="/fiveweb-loading/poster.jpg">
+      <source src="/fiveweb-loading/background.mp4" type="video/mp4">
+    </video>
+    <div class="bg-shade"></div>
+    <div class="bg-glow"></div>
+  </div>
+  <a class="skip" href="#main">İçeriğe geç</a>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="FiveWeb ana sayfa">
+      <span class="brand-mark" id="brand-mark" aria-hidden="true">FW</span>
+      <span class="brand-text">
+        <strong>FiveWeb</strong>
+        <small>Sunucu tarayıcısı</small>
+      </span>
+    </a>
+    <nav class="topnav" aria-label="Ana gezinme">
+      <a class="navlink is-active" href="#servers" aria-current="page">Sunucular</a>
+      <a class="navlink" href="#resources-info">Kaynaklar</a>
+      <a class="navlink" href="/launcher.html">Launcher</a>
+    </nav>
+  </header>
+
+  <main id="main" class="page">
+    <section class="hero" id="servers" aria-labelledby="servers-title">
+      <div class="hero-text">
+        <p class="eyebrow"><span class="chip">Ortak dünya · beta</span></p>
+        <h1 id="servers-title">Sunucular</h1>
+        <p class="lede">
+          Ortak Dünya'da oyuncular, NPC'ler ve araçlar aynı dünyada (8 oyuncu, beta). Serbest dolaşım 128 oyuncuya kadar konum paylaşır. Katılmak için bir sunucu seç; karakterinle girersin.
+        </p>
+        <div class="hero-stats">
+          <span class="stat-pill"><span class="pulse" aria-hidden="true"></span><b id="hero-online">0</b> <span>oyuncu çevrimiçi</span></span>
+          <span class="stat-pill"><b id="hero-servers">0</b> <span>sunucu</span></span>
+        </div>
+      </div>
+      <p id="list-meta" class="meta" role="status" aria-live="polite">Yükleniyor…</p>
+    </section>
+
+    <section class="toolbar" aria-label="Sunucu filtreleri">
+      <label class="search">
+        <span class="visually-hidden">Sunucu ara</span>
+        <input id="search" type="search" placeholder="Sunucu, açıklama veya etiket ara" autocomplete="off" maxlength="60">
+      </label>
+      <div class="filters" role="group" aria-label="Duruma göre filtrele">
+        <button type="button" class="filter is-active" data-filter="all" aria-pressed="true">Tümü</button>
+        <button type="button" class="filter" data-filter="open" aria-pressed="false">Açık</button>
+        <button type="button" class="filter" data-filter="full" aria-pressed="false">Dolu</button>
+      </div>
+      <button id="refresh" class="btn ghost small" type="button">Yenile</button>
+    </section>
+
+    <div class="layout">
+      <section class="card list-card" aria-labelledby="list-title">
+        <h2 id="list-title" class="visually-hidden">Sunucu listesi</h2>
+        <p id="list-notice" class="notice" role="alert" hidden></p>
+        <div id="server-list" class="server-list" aria-busy="true"></div>
+      </section>
+
+      <section class="card players-card" aria-labelledby="players-title">
+        <div class="players-head">
+          <h2 id="players-title"><span class="pulse" aria-hidden="true"></span>Çevrimiçi oyuncular</h2>
+          <span class="players-meta"><span id="players-server"></span> · <b id="players-count">0</b></span>
+        </div>
+        <ul id="player-list" class="player-list" aria-live="polite"></ul>
+      </section>
+
+      <aside class="card detail-card" aria-labelledby="detail-title">
+        <div id="account-panel" class="detail-section account-panel" aria-live="polite"></div>
+        <div id="detail-empty" class="detail-empty">
+          <strong>Bir sunucu seçin</strong>
+          <span>Açıklama, kaynaklar ve katılım bilgisi burada görünür.</span>
+        </div>
+        <div id="detail-body" hidden>
+          <p class="eyebrow">Seçili sunucu</p>
+          <h2 id="detail-title" tabindex="-1"></h2>
+          <p id="detail-desc" class="detail-desc"></p>
+          <dl class="stats">
+            <div><dt>Bağlı</dt><dd id="detail-connected"></dd></div>
+            <div><dt>Rezerve</dt><dd id="detail-reserved"></dd></div>
+            <div><dt>Kapasite</dt><dd id="detail-capacity"></dd></div>
+            <div><dt>Durum</dt><dd id="detail-status"></dd></div>
+          </dl>
+          <div class="detail-section">
+            <h3>Etiketler</h3>
+            <ul id="detail-tags" class="tags"></ul>
+          </div>
+          <div class="detail-section">
+            <h3>Kaynaklar</h3>
+            <ul id="detail-resources" class="resource-list"></ul>
+          </div>
+          <div class="detail-section">
+            <h3>Sesli iletişim</h3>
+            <p id="detail-voice" class="voice-note"></p>
+          </div>
+          <form id="join-form" class="join-form" novalidate>
+            <p id="join-character" class="field-hint"></p>
+            <label class="field">
+              <span class="field-label">Takma adınız</span>
+              <input id="nickname" name="nickname" type="text" autocomplete="nickname" maxlength="20" required
+                placeholder="Ada" aria-describedby="nick-hint">
+              <span id="nick-hint" class="field-hint">2–20 karakter.</span>
+            </label>
+            <button id="join-submit" class="btn primary" type="submit">Katıl</button>
+            <p id="join-status" class="status" role="status" aria-live="polite"></p>
+          </form>
+          <p class="compat">Uyumluluk: <code>fiveweb-js-v1</code>. Sunucular FXServer ikili dosyasıyla uyumlu değildir; FiveWeb'in kendi sunucu API'sini kullanır.</p>
+        </div>
+      </aside>
+    </div>
+
+    <section class="card notes" aria-labelledby="notes-title">
+      <h2 id="notes-title">Bilmeniz gerekenler</h2>
+      <ul>
+        <li>Liste 15 saniyede bir güncellenir. Boş ve dolu sunucular olduğu gibi görünür.</li>
+        <li>Oturum anahtarı yalnızca bu sekmenin oturum deposunda tutulur; adres çubuğunda ya da yerel depoda yer almaz.</li>
+        <li>Sesli iletişim isteğe bağlıdır. Mikrofon yalnızca siz sesli iletişimi açtığınızda istenir; kamera kullanılmaz.</li>
+        <li>Deneysel sürümde yalnızca oyuncu konumları senkronize edilir; tam GTA Online oturumu değildir.</li>
+      </ul>
+    </section>
+
+    <section class="card notes" id="resources-info" aria-labelledby="res-title">
+      <h2 id="res-title">Kaynaklar</h2>
+      <p class="muted-p">Her sunucu kendi kaynak listesini (ad ve sürüm) yayımlar. Bu liste bilgilendirme amaçlıdır; kaynaklar sunucudan tarayıcıya akar, yerel pakete kurulmaz.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>FiveWeb · Deneysel sunucu tarayıcısı</span>
+    <a href="/launcher.html">Tek oyunculu</a>
+  </footer>
+
+  <script src="/__grandv/i18n.js"></script>
+  <script src="/__lobby/account.js"></script>
+  <script src="/__lobby/lobby.js"></script>
+</body>
+</html>
